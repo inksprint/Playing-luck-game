@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Playing Game - Premium User Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* DARK ORANGE THEME */
+            --bg-body: #160800; 
+            --bg-app: #271002; 
+            --primary-gradient: linear-gradient(135deg, #f97316 0%, #c2410c 100%); 
+            --primary-light: rgba(249, 115, 22, 0.2);
+            --primary-border: rgba(249, 115, 22, 0.4);
+            
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #fdba74; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #5c1f00, var(--bg-body) 60%);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--bg-app);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        @media (min-width: 481px) {
+            .app-container {
+                min-height: 95vh;
+                margin-top: 20px;
+                border-radius: 24px;
+            }
+        }
+
+        /* Header */
+        .app-header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(39, 16, 2, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--glass-border); }
+        .app-title { font-size: 16px; font-weight: 700; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
+        .round-id { font-size: 10px; color: var(--text-muted); background: var(--glass-bg); padding: 3px 8px; border-radius: 20px; display: inline-block;}
+        
+        /* User Profile Button */
+        .user-profile {
+            background: var(--primary-light);
+            border: 1px solid var(--primary-border);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(249, 115, 22, 0.2);
+        }
+        .user-profile:active { transform: scale(0.95); }
+
+        /* Dashboard */
+        .dashboard { display: flex; gap: 12px; padding: 20px; }
+        .stat-card { flex: 1; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 15px; position: relative; }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; border-radius: 4px 0 0 4px;}
+        .stat-wallet::before { background: var(--success-color); }
+        .stat-bet::before { background: var(--primary-gradient); }
+        .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+        .stat-val { font-size: 20px; font-weight: 700; margin-top: 4px; }
+
+        .timer-wrapper { margin: 0 20px 15px; background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 15px; border: 1px solid var(--glass-border); }
+        .timer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .status-text { font-size: 13px; font-weight: 600; color: #fed7aa; }
+        .time-left { font-size: 22px; font-weight: 700; }
+        .progress-track { width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 100%; background: var(--primary-gradient); transition: width 1s linear; }
+
+        .history-board { padding: 0 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; }
+        .h-item { width: 32px; height: 32px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 18px; }
+
+        .active-selections { margin: 0 20px 15px; padding: 12px 15px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); border-radius: 12px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 45px; }
+        .sel-badge { background: var(--primary-light); border: 1px solid var(--primary-border); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #fff; display: flex; align-items: center; gap: 4px; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        /* Grid */
+        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 20px 20px; }
+        .grid-card { background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%); border: 1px solid var(--glass-border); border-radius: 16px; padding: 15px 10px; text-align: center; cursor: pointer; position: relative; transition: all 0.2s ease; }
+        .grid-card.selected { border-color: #f97316; background: rgba(249, 115, 22, 0.1); }
+        .grid-card.spinning { border-color: #fff; background: rgba(255, 255, 255, 0.15); transform: scale(1.05); z-index: 2; box-shadow: 0 0 20px rgba(249, 115, 22, 0.5); }
+        
+        .emoji { font-size: 36px; display: block; margin-bottom: 8px; }
+        .c-row { display: flex; justify-content: space-between; font-size: 10px; margin-top: 4px;}
+        .c-val-bet { color: #f97316; font-weight: 700; }
+
+        .controls-panel { background: rgba(0,0,0,0.3); border-top: 1px solid var(--glass-border); padding: 20px; margin-top: auto; }
+        .action-btns { display: flex; gap: 12px; }
+        .btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; text-transform: uppercase; font-family: 'Poppins'; }
+        .btn-clear { background: var(--glass-bg); border: 1px solid var(--glass-border); color: #fff; }
+        .btn-double { background: var(--primary-gradient); color: #fff; }
+
+        /* MODALS (Fixed) */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content { background: var(--bg-app); width: 100%; max-width: 480px; border-radius: 24px 24px 0 0; border-top: 1px solid var(--primary-border); padding: 25px 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 -10px 40px rgba(0,0,0,0.8); }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title-box { display: flex; align-items: center; gap: 12px; }
+        .modal-emoji { font-size: 32px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; border: 1px solid var(--primary-border); }
+        .modal-name { font-size: 20px; font-weight: 700; color: #fff; }
+        .modal-current-bet { font-size: 13px; color: #f97316; font-weight: 600; }
+        .close-btn { background: rgba(255,255,255,0.1); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; font-size: 16px; cursor: pointer; }
+
+        /* Bet Chips */
+        .popup-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+        .chip-add { background: linear-gradient(145deg, #3d1701, #1f0a00); border: 1px solid #7c2d12; color: #fff; font-weight: 700; font-size: 16px; font-family: 'Poppins'; padding: 15px 0; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.5); transition: 0.1s; }
+        .chip-add:active { transform: scale(0.95); background: var(--primary-gradient); border-color: transparent; }
+        .popup-chips .c-500 { grid-column: span 1; }
+        .popup-chips .c-1000 { grid-column: span 2; }
+        .btn-done { width: 100%; background: var(--primary-gradient); color: #fff; font-weight: 700; border: none; padding: 15px; border-radius: 12px; font-size: 16px; font-family: 'Poppins'; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(249, 115, 22, 0.4); }
+
+        /* User Menu List */
+        .menu-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px; }
+        .menu-btn { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); color: #fff; padding: 16px; border-radius: 12px; font-size: 14px; font-family: 'Poppins'; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; text-align: left; }
+        .menu-btn:hover { border-color: var(--primary-border); background: rgba(249, 115, 22, 0.05); }
+        .menu-btn:active { background: var(--primary-gradient); border-color: transparent; }
+        .menu-icon { font-size: 18px; }
+
+        /* Toasts */
+        #snackbar { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; width: 280px; }
+        .toast { background: #3d1701; padding: 12px; border-radius: 10px; font-size: 12px; border-left: 4px solid var(--success-color); box-shadow: 0 10px 20px rgba(0,0,0,0.4); animation: slide 0.3s forwards; color: #fff; }
+        @keyframes slide { from { transform: translateX(120%); } to { transform: translateX(0); } }
+    </style>
+</head>
+<body>
+
+<div id="snackbar"></div>
+
+<div class="app-container">
+    <div class="app-header">
+        <div>
+            <div class="app-title">LUCKY PLAY</div>
+            <div class="round-id" id="roundId">#R-101</div>
+        </div>
+        
+        <div class="user-profile" onclick="openUserMenu()">
+            👤 Shaad992
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="stat-card stat-wallet">
+            <div class="stat-label">Wallet</div>
+            <div class="stat-val">₹<span id="wallet">2500</span></div>
+        </div>
+        <div class="stat-card stat-bet">
+            <div class="stat-label">Total Bet</div>
+            <div class="stat-val">₹<span id="totalBet">0</span></div>
+        </div>
+    </div>
+
+    <div class="timer-wrapper">
+        <div class="timer-header">
+            <div class="status-text" id="statusText">🟢 Betting Open</div>
+            <div class="time-left">00:<span id="timer">60</span></div>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div class="history-board">
+        <span style="font-size:10px; color:var(--text-muted)">HISTORY:</span>
+        <div style="display:flex; gap:8px" id="historySlots"></div>
+    </div>
+
+    <div class="active-selections" id="activeSelections">
+        <span style="color:var(--text-muted); font-size:11px;">SELECTIONS:</span> 
+        <span style="color: #fff; font-size: 12px; margin-left: 5px;">None</span>
+    </div>
+
+    <div class="grid-container" id="grid"></div>
+
+    <div class="controls-panel">
+        <div class="action-btns">
+            <button class="btn btn-clear" onclick="clearBets()">Clear All</button>
+            <button class="btn btn-double" onclick="doubleBets()">Double x2</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="betModal" onclick="closeModalOnBG(event, 'betModal')">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title-box">
+                <div class="modal-emoji" id="mEmoji">🌹</div>
+                <div>
+                    <div class="modal-name" id="mName">Rose</div>
+                    <div class="modal-current-bet">Active Bet: ₹<span id="mActiveBet">0</span></div>
+                </div>
+            </div>
+            <button class="close-btn" onclick="closeModal('betModal')">✕</button>
+        </div>
+        
+        <div class="popup-chips">
+            <button class="chip-add" onclick="addBetToItem(10)">+10</button>
+            <button class="chip-add" onclick="addBetToItem(50)">+50</button>
+            <button class="chip-add" onclick="addBetToItem(100)">+100</button>
+            <button class="chip-add c-500" onclick="addBetToItem(500)">+500</button>
+            <button class="chip-add c-1000" onclick="addBetToItem(1000)">+1000</button>
+        </div>
+
+        <button class="btn-done" onclick="closeModal('betModal')">DONE</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="userModal" onclick="closeModalOnBG(event, 'userModal')">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title-box">
+                <div class="modal-emoji" style="border-radius: 50%;">👤</div>
+                <div>
+                    <div class="modal-name">Shaad992</div>
+                    <div class="modal-current-bet" style="color: var(--success-color);">Active Player</div>
+                </div>
+            </div>
+            <button class="close-btn" onclick="closeModal('userModal')">✕</button>
+        </div>
+        
+        <div class="menu-list">
+            <button class="menu-btn" onclick="handleMenuAction('Account Statement')">
+                <span class="menu-icon">📄</span> Account Statement
+            </button>
+            <button class="menu-btn" onclick="handleMenuAction('Bet History')">
+                <span class="menu-icon">⏱</span> Bet History
+            </button>
+            <button class="menu-btn" onclick="handleMenuAction('Change Password')">
+                <span class="menu-icon">🔑</span> Change Password
+            </button>
+            <button class="menu-btn" onclick="handleMenuAction('Deposit / Withdrawal')">
+                <span class="menu-icon">💳</span> Deposit / Withdrawal
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ITEMS = [
+        { id: 'u', e: '☔', n: 'Umbrella' }, { id: 'f', e: '⚽', n: 'Football' },
+        { id: 's', e: '🌞', n: 'Sun' }, { id: 'd', e: '🪔', n: 'Diya' },
+        { id: 'c', e: '🐄', n: 'Cow' }, { id: 'b', e: '🪣', n: 'Bucket' },
+        { id: 'k', e: '🪁', n: 'Kite' }, { id: 'o', e: '🛸', n: 'UFO' },
+        { id: 'r', e: '🌹', n: 'Rose' }, { id: 'rb', e: '🐇', n: 'Rabbit' },
+        { id: 'pg', e: '🐦', n: 'Pigeon' }, { id: 'bt', e: '🦋', n: 'Butterfly' }
+    ];
+
+    let state = {
+        wallet: 2500, totalBet: 0,
+        bets: {}, pool: {}, history: ['🌹','🐦','🐇'],
+        time: 60, phase: 'open', roundNum: 101,
+        activePopupId: null 
+    };
+
+    const DOM = {
+        grid: document.getElementById('grid'),
+        wallet: document.getElementById('wallet'),
+        totalBet: document.getElementById('totalBet'),
+        timer: document.getElementById('timer'),
+        progress: document.getElementById('progressFill'),
+        status: document.getElementById('statusText'),
+        roundId: document.getElementById('roundId'),
+        snackbar: document.getElementById('snackbar'),
+        historySlots: document.getElementById('historySlots'),
+        activeSelections: document.getElementById('activeSelections'),
+        
+        betModal: document.getElementById('betModal'),
+        mEmoji: document.getElementById('mEmoji'),
+        mName: document.getElementById('mName'),
+        mActiveBet: document.getElementById('mActiveBet'),
+        
+        userModal: document.getElementById('userModal')
+    };
+
+    function showToast(msg, type='success') {
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.style.borderLeftColor = type === 'success' ? 'var(--success-color)' : 'var(--danger-color)';
+        t.innerHTML = msg;
+        DOM.snackbar.appendChild(t);
+        setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(), 300); }, 2500);
+    }
+
+    function init() {
+        ITEMS.forEach(i => {
+            state.bets[i.id] = 0;
+            state.pool[i.id] = Math.floor(Math.random() * 500) + 100;
+            const el = document.createElement('div');
+            el.className = 'grid-card'; el.id = `item-${i.id}`;
+            el.innerHTML = `<span class="emoji">${i.e}</span><div class="c-row"><span style="color:var(--text-muted)">Pool</span><span id="p-${i.id}">${state.pool[i.id]}</span></div><div class="c-row"><span>Bet</span><span class="c-val-bet" id="m-${i.id}">0</span></div>`;
+            el.onclick = () => openBetPopup(i.id);
+            DOM.grid.appendChild(el);
+        });
+        renderHistory();
+        startEngine();
+    }
+
+    // --- MODAL LOGIC (Re-usable) ---
+    function openBetPopup(id) {
+        if(state.phase !== 'open') return showToast("Bets are locked!", "error");
+        
+        state.activePopupId = id;
+        const itemObj = ITEMS.find(i => i.id === id);
+        DOM.mEmoji.innerText = itemObj.e;
+        DOM.mName.innerText = itemObj.n;
+        DOM.mActiveBet.innerText = state.bets[id];
+        
+        DOM.betModal.classList.add('active');
+        document.body.style.overflow = 'hidden'; 
+    }
+
+    function openUserMenu() {
+        DOM.userModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+        DOM[modalId].classList.remove('active');
+        if(modalId === 'betModal') state.activePopupId = null;
+        
+        // Restore scrolling only if NO modals are active
+        if(!DOM.betModal.classList.contains('active') && !DOM.userModal.classList.contains('active')) {
+            document.body.style.overflow = 'auto'; 
+        }
+    }
+
+    function closeModalOnBG(e, modalId) {
+        if(e.target === DOM[modalId]) closeModal(modalId);
+    }
+
+    // --- USER MENU ACTIONS ---
+    function handleMenuAction(actionName) {
+        closeModal('userModal');
+        showToast("Opening " + actionName + "...", "success");
+        // Future code: redirect to page or open new component
+    }
+
+    // --- BETTING LOGIC ---
+    function addBetToItem(amount) {
+        if(state.phase !== 'open' || !state.activePopupId) return;
+        if(state.wallet < amount) return showToast("Balance kam hai!", "error");
+        
+        const id = state.activePopupId;
+        state.wallet -= amount; 
+        state.bets[id] += amount; 
+        state.totalBet += amount;
+        
+        DOM.mActiveBet.innerText = state.bets[id];
+        updateMainUI();
+    }
+
+    function clearBets() {
+        if(state.phase !== 'open') return;
+        state.wallet += state.totalBet;
+        for(let k in state.bets) state.bets[k] = 0;
+        state.totalBet = 0; 
+        updateMainUI();
+        if(state.activePopupId) DOM.mActiveBet.innerText = "0"; 
+    }
+
+    function doubleBets() {
+        if(state.phase !== 'open' || state.totalBet === 0) return;
+        if(state.wallet < state.totalBet) return showToast("Balance kam hai!", "error");
+        state.wallet -= state.totalBet;
+        for(let k in state.bets) { if(state.bets[k] > 0) state.bets[k] *= 2; }
+        state.totalBet *= 2; 
+        updateMainUI();
+        if(state.activePopupId) DOM.mActiveBet.innerText = state.bets[state.activePopupId];
+    }
+
+    function updateMainUI() {
+        DOM.wallet.innerText = state.wallet;
+        DOM.totalBet.innerText = state.totalBet;
+        
+        let selectedList = [];
+        ITEMS.forEach(i => {
+            const card = document.getElementById(`item-${i.id}`);
+            document.getElementById(`m-${i.id}`).innerText = state.bets[i.id];
+            
+            if(state.bets[i.id] > 0) {
+                card.classList.add('selected');
+                selectedList.push(`<span class="sel-badge">${i.e} ${i.n}</span>`);
+            } else {
+                card.classList.remove('selected');
+            }
+        });
+
+        if(selectedList.length > 0) {
+            DOM.activeSelections.innerHTML = `<span style="color:var(--text-muted); font-size:11px;">SELECTIONS:</span> ${selectedList.join('')}`;
+        } else {
+            DOM.activeSelections.innerHTML = `<span style="color:var(--text-muted); font-size:11px;">SELECTIONS:</span> <span style="color: #fff; font-size: 12px; margin-left: 5px;">None</span>`;
+        }
+    }
+
+    function renderHistory() {
+        DOM.historySlots.innerHTML = '';
+        state.history.slice(0, 5).forEach(h => {
+            const s = document.createElement('div'); s.className = 'h-item'; s.innerText = h;
+            DOM.historySlots.appendChild(s);
+        });
+    }
+
+    function startEngine() {
+        setInterval(() => {
+            state.time--;
+            DOM.timer.innerText = state.time < 10 ? '0'+state.time : state.time;
+            DOM.progress.style.width = (state.time/60)*100 + '%';
+
+            if(state.time === 10) {
+                state.phase = 'lock';
+                closeModal('betModal'); 
+                DOM.status.innerText = "🔴 Bets Closed";
+                DOM.status.style.color = "var(--danger-color)";
+                DOM.progress.style.background = "var(--danger-color)";
+                state.spinInt = setInterval(() => {
+                    document.querySelectorAll('.grid-card').forEach(c => c.classList.remove('spinning'));
+                    document.getElementById(`item-${ITEMS[Math.floor(Math.random()*ITEMS.length)].id}`).classList.add('spinning');
+                }, 100);
+            }
+
+            if(state.time === 0) {
+                clearInterval(state.spinInt);
+                document.querySelectorAll('.grid-card').forEach(c => c.classList.remove('spinning'));
+                const win = ITEMS[Math.floor(Math.random()*ITEMS.length)];
+                document.getElementById(`item-${win.id}`).classList.add('spinning');
+                
+                state.history.unshift(win.e);
+                renderHistory();
+
+                let winAmt = state.bets[win.id] * 9;
+                if(winAmt > 0) {
+                    state.wallet += winAmt;
+                    showToast(`Mubarak ho! Aapne ₹${winAmt} jeete!`);
+                } else {
+                    showToast(`${win.n} jeeta. Agli baar try karein!`, "error");
+                }
+
+                setTimeout(() => {
+                    state.time = 60; state.phase = 'open'; state.totalBet = 0;
+                    for(let k in state.bets) state.bets[k] = 0;
+                    state.roundNum++; DOM.roundId.innerText = `#R-${state.roundNum}`;
+                    DOM.status.innerText = "🟢 Betting Open";
+                    DOM.status.style.color = "#fed7aa";
+                    DOM.progress.style.background = "var(--primary-gradient)";
+                    updateMainUI();
+                }, 4000);
+            }
+        }, 1000);
+    }
+    init();
+</script>
+</body>
+</html>
