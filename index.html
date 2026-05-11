@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pappu Game Play | Smooth Edition</title>
+    <title>Pappu Game Play | Shine Edition</title>
     <style>
         :root {
-            --bg-main: #e0f7fa;
+            --bg-main: #0f172a; 
+            --bg-gradient: #1e293b; 
             --white: #ffffff;
-            --accent-cyan: #00bcd4;
-            --pool-gold: #d97706;
-            --text-main: #1e293b;
+            --accent-cyan: #0ea5e9; 
+            --pool-gold: #fbbf24;
+            --text-main: #f8fafc;
             --success: #10b981;
             --danger: #ef4444;
+            --neon-wave: #00f3ff;
         }
 
         body {
-            background: radial-gradient(circle at top, #f0faff 0%, #e0f7fa 100%);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: radial-gradient(circle at top, var(--bg-gradient) 0%, var(--bg-main) 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -28,40 +30,86 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* --- SHINE EFFECT TITLE BADGE --- */
         .title-badge {
-            background: linear-gradient(90deg, #0284c7, #00bcd4);
+            position: relative;
+            background: linear-gradient(90deg, #0369a1, #0ea5e9);
             color: white;
-            padding: 10px 40px;
+            padding: 10px 45px;
             border-radius: 0 0 25px 25px;
             font-size: 1.1rem;
             font-weight: 800;
             letter-spacing: 1.2px;
-            box-shadow: 0 4px 20px rgba(0, 188, 212, 0.3);
+            box-shadow: 0 4px 20px rgba(14, 165, 233, 0.4);
             margin-bottom: 15px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            text-transform: uppercase;
+            overflow: hidden; /* Shine ko andar rakhne ke liye */
+        }
+
+        .title-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(
+                to right, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.4) 50%, 
+                transparent 100%
+            );
+            transform: skewX(-25deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -150%; }
+            100% { left: 150%; }
         }
 
         .dashboard {
             width: 92%;
             max-width: 500px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 24px;
-            padding: 20px;
-            margin: 10px 0;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(15px);
+            border-radius: 28px;
+            padding: 22px;
+            margin: 5px 0;
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
             text-align: center;
             align-items: center;
         }
 
-        .stat-label { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        .stat-label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; }
         .stat-val { font-size: 1.4rem; font-weight: 800; color: var(--accent-cyan); display: block; }
-        #timer { font-size: 3.8rem; font-weight: 900; color: #0369a1; line-height: 1; margin: 5px 0; transition: color 0.3s ease; }
+        #timer { font-size: 4rem; font-weight: 900; color: #f8fafc; line-height: 0.9; margin: 8px 0; font-variant-numeric: tabular-nums; }
         .timer-warning { color: var(--danger) !important; }
+
+        .chip-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            width: 92%;
+            max-width: 500px;
+            justify-content: center;
+        }
+        .chip {
+            background: #334155;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.8rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .chip.active { background: var(--accent-cyan); border-color: white; box-shadow: 0 0 10px var(--accent-cyan); }
 
         .grid {
             display: grid;
@@ -70,70 +118,59 @@
             width: 92%;
             max-width: 500px;
             padding: 20px;
-            background: rgba(186, 230, 253, 0.25);
+            background: rgba(15, 23, 42, 0.4);
             border-radius: 30px;
             margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
         .card {
-            background: var(--white);
-            border-radius: 20px;
-            padding: 20px 5px;
+            background: #1e293b;
+            border-radius: 22px;
+            padding: 22px 5px;
             text-align: center;
             cursor: pointer;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
-            border: 1px solid rgba(0,0,0,0.03);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
             position: relative;
         }
 
-        .card:active { transform: scale(0.92); }
-
-        .card.win-glow {
-            border: 3px solid var(--success);
-            box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
-            animation: winner-pulse 0.8s infinite alternate;
+        .neon-pulse {
+            border: 2px solid var(--neon-wave);
+            box-shadow: 0 0 15px var(--neon-wave);
+            animation: breathe 1.5s ease-in-out infinite;
         }
 
-        @keyframes winner-pulse { from { transform: scale(1); } to { transform: scale(1.06); } }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 10px var(--neon-wave); }
+            50% { transform: scale(1.02); box-shadow: 0 0 25px var(--neon-wave); }
+        }
 
-        .emoji { font-size: 3.2rem; display: block; margin-bottom: 8px; }
-        .bet-tag { background: #f1f5f9; color: var(--pool-gold); font-size: 0.95rem; font-weight: 800; padding: 6px 16px; border-radius: 12px; border: 1px solid #e2e8f0; display: inline-block; }
+        .card:active { transform: scale(0.94); }
+        .card.win-glow { border: 4px solid var(--success); box-shadow: 0 0 35px rgba(16, 185, 129, 0.6); transform: scale(1.05); background: #064e3b; }
+
+        .emoji { font-size: 3.4rem; display: block; margin-bottom: 10px; }
+        .bet-tag { background: rgba(15, 23, 42, 0.6); color: var(--pool-gold); font-size: 1rem; font-weight: 800; padding: 6px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); }
 
         #result-popup { 
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
-            width: 310px; padding: 40px 20px; border-radius: 35px; text-align: center;
+            width: 240px; padding: 30px 15px; border-radius: 30px; text-align: center;
             z-index: 9999; transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 40px 80px rgba(0,0,0,0.4); color: white; display: none;
-            border: 5px solid rgba(255,255,255,0.9);
+            box-shadow: 0 45px 90px rgba(0,0,0,0.6); color: white; display: none;
+            border: 4px solid rgba(255,255,255,0.2);
         }
         #result-popup.show { transform: translate(-50%, -50%) scale(1); display: block; }
-        .win-bg { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-        .loss-bg { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
-        
-        .pop-emoji { font-size: 6.5rem; display: block; margin-bottom: 20px; }
-        .pop-text { font-size: 2.4rem; font-weight: 900; letter-spacing: 1.5px; }
+        .win-bg { background: linear-gradient(135deg, #059669, #064e3b); }
+        .loss-bg { background: linear-gradient(135deg, #dc2626, #7f1d1d); }
 
-        .history { display: flex; gap: 12px; margin: 15px 0; justify-content: center; min-height: 85px; }
+        .history { display: flex; gap: 12px; margin: 15px 0; justify-content: center; min-height: 90px; }
         .h-item-wrapper { display: flex; flex-direction: column; align-items: center; }
-        .h-circle { 
-            width: 52px; height: 52px; background: white; 
-            border-radius: 50%; display: grid; place-items: center; 
-            border: 2px solid var(--accent-cyan); font-size: 1.8rem;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.06);
-        }
-        .h-amount { font-size: 0.7rem; font-weight: 800; color: #0369a1; margin-top: 6px; background: #fff; padding: 2px 8px; border-radius: 6px; border: 1px solid #bae6fd; }
+        .h-circle { width: 54px; height: 54px; background: #1e293b; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--accent-cyan); font-size: 2rem; box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
+        .h-amount { font-size: 0.7rem; font-weight: 900; color: var(--pool-gold); margin-top: 6px; background: #0f172a; padding: 3px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
 
-        .bet-bar { 
-            background: #ffffff; padding: 15px 40px; border-radius: 60px; 
-            display: flex; gap: 15px; align-items: center;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.08); margin: 25px 0; 
-            border: 1px solid #e2e8f0;
-        }
-        input { border: 2px solid #e2e8f0; border-radius: 30px; padding: 12px; width: 130px; text-align: center; font-weight: 800; font-size: 1.2rem; color: #0369a1; outline: none; transition: border-color 0.3s; }
-        input:focus { border-color: var(--accent-cyan); }
-
-        @media (max-width: 400px) { .dashboard { padding: 15px; } .stat-val { font-size: 1.2rem; } #timer { font-size: 3.2rem; } }
+        .bet-bar { background: #1e293b; padding: 18px 45px; border-radius: 60px; display: flex; gap: 18px; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.4); margin: 25px 0; border: 1px solid rgba(255,255,255,0.1); }
+        input { background: #0f172a; border: 2px solid #334155; border-radius: 35px; padding: 14px; width: 140px; text-align: center; font-weight: 800; font-size: 1.3rem; color: var(--accent-cyan); outline: none; }
     </style>
 </head>
 <body>
@@ -141,28 +178,37 @@
     <div class="title-badge">Pappu Game Play</div>
 
     <div id="result-popup">
-        <span class="pop-emoji" id="pop-icon">🎁</span>
-        <div class="pop-text" id="pop-title">...</div>
-        <div style="font-size: 1.5rem; margin-top: 10px; font-weight: 800;" id="pop-amount"></div>
+        <span class="pop-emoji" id="pop-icon" style="font-size: 5rem; display: block; margin-bottom: 15px;">🎁</span>
+        <div class="pop-text" id="pop-title" style="font-size: 2rem; font-weight: 900;">...</div>
+        <div style="font-size: 1.4rem; margin-top: 10px; font-weight: 800; color: var(--pool-gold);" id="pop-amount"></div>
     </div>
 
     <div class="dashboard">
-        <div><span class="stat-label">WALLET</span><span class="stat-val">₹<span id="bal">...</span></span></div>
+        <div><span class="stat-label">Wallet</span><span class="stat-val">₹<span id="bal">...</span></span></div>
         <div><div id="timer">--</div><span id="status" style="font-size:0.75rem; font-weight:900;">SYNCING</span></div>
-        <div><span class="stat-label">POOL</span><span class="stat-val" id="pool" style="color:var(--pool-gold)">0</span></div>
+        <div><span class="stat-label">Pool</span><span class="stat-val" id="pool" style="color:var(--pool-gold)">0</span></div>
     </div>
 
     <div class="history" id="hist"></div>
+
+    <div class="chip-bar">
+        <div class="chip" onclick="setAmt(10)">₹10</div>
+        <div class="chip" onclick="setAmt(50)">₹50</div>
+        <div class="chip active" id="chip-100" onclick="setAmt(100)">₹100</div>
+        <div class="chip" onclick="setAmt(500)">₹500</div>
+        <div class="chip" onclick="setAmt(1000)">₹1000</div>
+    </div>
+
     <div class="grid" id="grid"></div>
 
     <div class="bet-bar">
         <input type="number" id="amt" value="100" min="10">
-        <span style="font-weight: 700; color: #64748b;">Tap to Bet</span>
+        <span style="font-weight: 800; color: #94a3b8;">Tap to Bet</span>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, update, runTransaction, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, update, runTransaction, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBL6_PZO69nI5Ci5sb0k-seiDUVz2K3hjU",
@@ -179,16 +225,27 @@
         const signs = ['☂️','⚽','☀️','🪔','🐄','🪣','🪁','🛸','🌷','🦋','🐦','🐓'];
         const userId = "king666";
 
-        let myWallet = 0;
-        let canBet = false;
-        let globalBets = {};
-        let myCurrentBets = {}; 
+        const betSound = new Audio('https://www.soundjay.com/buttons/button-37.mp3');
+        const tickSound = new Audio('https://www.soundjay.com/buttons/button-50.mp3');
+        const winSound = new Audio('https://www.soundjay.com/human/applause-01.mp3');
+
+        let myWallet = 0, canBet = false, globalBets = {}, myCurrentBets = {}, isMaster = false;
 
         const gridUI = document.getElementById('grid');
         signs.forEach((s, i) => {
             gridUI.innerHTML += `<div class="card" id="card-${i}" onclick="placeBet(${i})">
                 <span class="emoji">${s}</span><div class="bet-tag" id="tag-${i}">₹0</div></div>`;
         });
+
+        window.setAmt = (v) => {
+            document.getElementById('amt').value = v;
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        };
+
+        const masterRef = ref(db, 'luckyGame/master');
+        onValue(masterRef, (snap) => { if (!snap.val() || snap.val() === userId) setMaster(); });
+        async function setMaster() { await update(ref(db, 'luckyGame'), { master: userId }); onDisconnect(masterRef).remove(); isMaster = true; }
 
         onValue(ref(db, `users/${userId}`), (snap) => {
             const data = snap.val();
@@ -201,118 +258,90 @@
             if (!canBet) return;
             const amount = parseInt(document.getElementById('amt').value);
             if (amount > myWallet) return alert("Balance Low!");
+            betSound.play().catch(()=>{});
             update(ref(db, `users/${userId}`), { balance: myWallet - amount });
             runTransaction(ref(db, `users/${userId}/currentRoundBets/${id}`), (curr) => (curr || 0) + amount);
             runTransaction(ref(db, `luckyGame/bets/${id}`), (curr) => (curr || 0) + amount);
         };
 
-        const popup = document.getElementById('result-popup');
-        const popIcon = document.getElementById('pop-icon');
-        const popTitle = document.getElementById('pop-title');
-        const popAmt = document.getElementById('pop-amount');
-
         onValue(ref(db, 'luckyGame'), (snapshot) => {
-            const data = snapshot.val();
-            if (!data) return;
+            const data = snapshot.val(); if (!data) return;
             const t = data.timer;
-            const timerEl = document.getElementById('timer');
-            const statusEl = document.getElementById('status');
-            
-            timerEl.innerText = t;
+            document.getElementById('timer').innerText = t;
+
+            if (t > 0 && t <= 10) tickSound.play().catch(()=>{});
 
             if (t > 10) {
                 canBet = true;
-                popup.classList.remove('show', 'win-bg', 'loss-bg');
-                document.querySelectorAll('.card').forEach(c => c.classList.remove('win-glow'));
-                statusEl.innerText = "OPEN";
-                statusEl.style.color = "var(--success)";
-                timerEl.classList.remove('timer-warning');
+                document.getElementById('result-popup').classList.remove('show');
+                document.querySelectorAll('.card').forEach(c => c.classList.remove('win-glow', 'neon-pulse'));
+                document.getElementById('status').innerText = "OPEN";
+                document.getElementById('status').style.color = "#10b981";
             } else {
                 canBet = false;
-                statusEl.innerText = t <= 0 ? "RESULT" : "CLOSED";
-                statusEl.style.color = "var(--danger)";
-                if(t > 0) timerEl.classList.add('timer-warning');
+                document.getElementById('status').innerText = t <= 0 ? "RESULT" : "CLOSED";
+                document.getElementById('status').style.color = "#ef4444";
+                if (t > 0) {
+                    for (let id in globalBets) if (globalBets[id] > 0) document.getElementById(`card-${id}`).classList.add('neon-pulse');
+                }
             }
 
             let pool = 0;
             globalBets = data.bets || {};
             signs.forEach((_, i) => document.getElementById(`tag-${i}`).innerText = "₹0");
             for (let id in globalBets) {
-                if(document.getElementById(`tag-${id}`)) {
-                    document.getElementById(`tag-${id}`).innerText = `₹${globalBets[id]}`;
-                    pool += globalBets[id];
-                }
+                document.getElementById(`tag-${id}`).innerText = `₹${globalBets[id]}`;
+                pool += globalBets[id];
             }
             document.getElementById('pool').innerText = pool;
 
             if (t === 0 && data.lastWin !== undefined) {
                 const winIdx = data.lastWin;
                 if(winIdx !== -1) document.getElementById(`card-${winIdx}`)?.classList.add('win-glow');
-                popIcon.innerText = winIdx === -1 ? "🏠" : signs[winIdx];
-                const amountOnWinner = (winIdx !== -1) ? (myCurrentBets[winIdx] || 0) : 0;
-
-                if (amountOnWinner > 0) {
-                    const winTotal = amountOnWinner * 9;
-                    popTitle.innerText = "YOU WON!";
-                    popAmt.innerText = `Received: ₹${winTotal}`;
-                    popup.classList.add('show', 'win-bg');
-                    setTimeout(() => {
-                        update(ref(db, `users/${userId}`), { balance: myWallet + winTotal, currentRoundBets: null });
-                    }, 1000);
+                const pop = document.getElementById('result-popup');
+                document.getElementById('pop-icon').innerText = winIdx === -1 ? "🏠" : signs[winIdx];
+                const amtOnWin = (winIdx !== -1) ? (myCurrentBets[winIdx] || 0) : 0;
+                if (amtOnWin > 0) {
+                    const total = amtOnWin * 9; winSound.play().catch(()=>{});
+                    document.getElementById('pop-title').innerText = "YOU WON!";
+                    document.getElementById('pop-amount').innerText = `Win: ₹${total}`;
+                    pop.className = "show win-bg";
+                    setTimeout(() => { update(ref(db, `users/${userId}`), { balance: myWallet + total, currentRoundBets: null }); }, 1000);
                 } else {
-                    popTitle.innerText = "TRY AGAIN!";
-                    popAmt.innerText = winIdx === -1 ? "HOUSE WINS!" : `Result: ${signs[winIdx]}`;
-                    popup.classList.add('show', 'loss-bg');
+                    document.getElementById('pop-title').innerText = "TRY AGAIN!";
+                    document.getElementById('pop-amount').innerText = winIdx === -1 ? "HOUSE" : signs[winIdx];
+                    pop.className = "show loss-bg";
                     setTimeout(() => { update(ref(db, `users/${userId}`), { currentRoundBets: null }); }, 1000);
                 }
-                setTimeout(() => { popup.classList.remove('show'); }, 4500);
             }
-
             if (data.history) {
-                document.getElementById('hist').innerHTML = data.history.map(h => {
-                    const icon = typeof h === 'object' ? h.icon : h;
-                    const amount = typeof h === 'object' ? (h.amount || 0) : 0;
-                    return `
-                        <div class="h-item-wrapper">
-                            <div class="h-circle">${icon}</div>
-                            <div class="h-amount">₹${amount}</div>
-                        </div>
-                    `;
-                }).join('');
+                document.getElementById('hist').innerHTML = data.history.map(h => `
+                    <div class="h-item-wrapper">
+                        <div class="h-circle">${h.icon || h}</div>
+                        <div class="h-amount">₹${h.amount || 0}</div>
+                    </div>`).join('');
             }
         });
 
-        // OPTIMIZED MASTER TIMER
         setInterval(() => {
+            if (!isMaster) return;
             runTransaction(ref(db, 'luckyGame/timer'), (curr) => {
                 if (curr === null) return 60;
                 let next = curr - 1;
-                // Avoid rapid updates by checking only once per second on master logic
-                if (next < -6) {
-                    update(ref(db, 'luckyGame'), { bets: null });
-                    return 60; 
-                }
+                if (next < -6) { update(ref(db, 'luckyGame'), { bets: null }); return 60; }
                 if (next === 0) calculateWinnerLocally();
                 return next;
             });
         }, 1000);
 
         function calculateWinnerLocally() {
-            let total = 0;
-            for (let id in globalBets) total += globalBets[id];
-            let safe = [];
-            signs.forEach((_, i) => { 
-                let betOnSign = globalBets[i] || 0;
-                if (betOnSign === 0 || (betOnSign * 9) <= total) safe.push(i);
-            });
+            let total = 0; for (let id in globalBets) total += globalBets[id];
+            let safe = []; signs.forEach((_, i) => { if ((globalBets[i] || 0) * 9 <= total) safe.push(i); });
             const winIdx = safe.length > 0 ? safe[Math.floor(Math.random() * safe.length)] : -1;
             const historyIcon = winIdx === -1 ? "🏠" : signs[winIdx];
             const winningAmount = winIdx === -1 ? 0 : (globalBets[winIdx] || 0);
-
             get(ref(db, 'luckyGame/history')).then(s => {
-                let h = s.val() || [];
-                h.unshift({ icon: historyIcon, amount: winningAmount });
-                if (h.length > 5) h.pop();
+                let h = s.val() || []; h.unshift({ icon: historyIcon, amount: winningAmount }); if (h.length > 5) h.pop();
                 update(ref(db, 'luckyGame'), { lastWin: winIdx, history: h });
             });
         }
