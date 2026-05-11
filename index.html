@@ -3,292 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>King666 | Realtime Auto Game</title>
-    <style>
-        :root {
-            --bg-color: #e0f7fa;
-            --white: #ffffff;
-            --accent: #00bcd4;
-            --danger: #ff5252;
-            --gold: #d97706;
-        }
-
-        body {
-            background: var(--bg-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #333;
-        }
-
-        /* Top Header */
-        .dashboard {
-            width: 95%; max-width: 900px;
-            background: var(--white);
-            border-radius: 15px;
-            padding: 15px;
-            margin: 15px 0;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .stat-val { font-size: 1.4rem; font-weight: bold; color: var(--accent); display: block; }
-        .stat-label { font-size: 0.7rem; color: #777; text-transform: uppercase; }
-
-        #timer { font-size: 3rem; font-weight: 900; color: #00838f; margin: 0; }
-        .critical { color: var(--danger) !important; animation: blink 0.8s infinite; }
-
-        /* Game Grid */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 10px;
-            width: 95%; max-width: 900px;
-            padding: 10px;
-        }
-
-        .card {
-            background: var(--white);
-            border-radius: 10px;
-            padding: 15px 5px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-            border-bottom: 4px solid #cbd5e1;
-            position: relative;
-        }
-
-        .card:active { transform: scale(0.95); }
-        .card.win { border: 4px solid #4caf50; background: #e8f5e9; transform: scale(1.05); z-index: 10; }
-        .card.disabled { opacity: 0.6; cursor: not-allowed; }
-
-        .emoji { font-size: 2.5rem; display: block; }
-        .bet-tag { font-size: 0.8rem; font-weight: bold; color: var(--gold); margin-top: 5px; }
-
-        /* History */
-        .history { display: flex; gap: 8px; margin: 10px 0; }
-        .h-item { width: 35px; height: 35px; background: #fff; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid var(--accent); font-size: 1.1rem; }
-
-        /* Input Panel */
-        .controls {
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #fff;
-            padding: 10px 20px;
-            border-radius: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-
-        input { border: 2px solid var(--accent); border-radius: 20px; padding: 8px; width: 100px; text-align: center; font-weight: bold; outline: none; }
-
-        @keyframes blink { 50% { opacity: 0.4; } }
-        @media (max-width: 600px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-    </style>
-</head>
-<body>
-
-    <div class="dashboard">
-        <div>
-            <span class="stat-label">My Wallet</span>
-            <span class="stat-val">₹<span id="bal">50000</span></span>
-        </div>
-        <div>
-            <div id="timer">60</div>
-            <span id="status" style="font-size: 0.7rem; font-weight: bold; color: #4caf50;">OPEN</span>
-        </div>
-        <div>
-            <span class="stat-label">Total Pool</span>
-            <span class="stat-val" style="color: var(--gold);">₹<span id="pool">0</span></span>
-        </div>
-    </div>
-
-    <div class="history" id="hist"></div>
-
-    <div class="grid" id="grid"></div>
-
-    <div class="controls">
-        <span style="font-weight: bold; color: #555;">Bet:</span>
-        <input type="number" id="amt" value="100">
-        <span style="font-size: 0.8rem; color: #999;">Tap to place</span>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBL6_PZO69nI5Ci5sb0k-seiDUVz2K3hjU",
-            authDomain: "luckyplaygame-6b4c2.firebaseapp.com",
-            databaseURL: "https://luckyplaygame-6b4c2-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "luckyplaygame-6b4c2",
-            storageBucket: "luckyplaygame-6b4c2.firebasestorage.app",
-            messagingSenderId: "628388666824",
-            appId: "1:628388666824:web:82e2a59c1daf2eac49f4fd"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        const symbols = ['☂️','⚽','☀️','🪔','🐄','🪣','🪁','🛸','🌷','🦋','🐦','🐓'];
-        let wallet = 50000;
-        let currentBets = Array(12).fill(0);
-        let canBet = true;
-
-        // --- GRID GENERATION ---
-        const gridUI = document.getElementById('grid');
-        symbols.forEach((s, i) => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.id = `card-${i}`;
-            card.innerHTML = `<span class="emoji">${s}</span><div class="bet-tag" id="t-${i}">₹0</div>`;
-            card.onclick = () => placeBet(i);
-            gridUI.appendChild(card);
-        });
-
-        // --- BETTING FUNCTION ---
-        function placeBet(idx) {
-            if (!canBet) return;
-            const betAmt = parseInt(document.getElementById('amt').value);
-            if (betAmt > wallet) { alert("Balance low!"); return; }
-
-            wallet -= betAmt;
-            document.getElementById('bal').innerText = wallet;
-            
-            // Sync to Firebase
-            const newTotal = (currentBets[idx] || 0) + betAmt;
-            update(ref(db, 'game/bets'), { [idx]: newTotal });
-        }
-
-        // --- REALTIME SYNC LISTENERS ---
-        onValue(ref(db, 'game'), (snap) => {
-            const data = snap.val();
-            if (!data) return;
-
-            // Timer & Status
-            const t = data.timer;
-            document.getElementById('timer').innerText = t;
-            
-            if (t <= 10) {
-                canBet = false;
-                document.getElementById('timer').classList.add('critical');
-                document.getElementById('status').innerText = "CLOSED";
-                document.getElementById('status').style.color = "red";
-                document.querySelectorAll('.card').forEach(c => c.classList.add('disabled'));
-            } else {
-                canBet = true;
-                document.getElementById('timer').classList.remove('critical');
-                document.getElementById('status').innerText = "OPEN";
-                document.getElementById('status').style.color = "#4caf50";
-                document.querySelectorAll('.card').forEach(c => c.classList.remove('disabled', 'win'));
-            }
-
-            // Bets & Pool
-            if (data.bets) {
-                currentBets = Object.values(data.bets);
-                let totalPool = 0;
-                currentBets.forEach((v, i) => {
-                    document.getElementById(`t-${i}`).innerText = '₹' + v;
-                    totalPool += v;
-                });
-                document.getElementById('pool').innerText = totalPool;
-            }
-
-            // Result Visual
-            if (t === 0 && data.lastWin !== undefined) {
-                document.getElementById(`card-${data.lastWin}`)?.classList.add('win');
-            }
-
-            // History
-            if (data.history) {
-                document.getElementById('hist').innerHTML = data.history.map(h => `<div class="h-item">${h}</div>`).join('');
-            }
-        });
-
-        // --- MASTER ENGINE (AUTO-LOOP) ---
-        function startEngine() {
-            let localTime = 60;
-            setInterval(() => {
-                localTime--;
-                if (localTime < -5) localTime = 60; // 5 seconds gap for result show
-
-                if (localTime >= 0) {
-                    update(ref(db, 'game'), { timer: localTime });
-                }
-
-                // Winner Logic at 0 second
-                if (localTime === 0) {
-                    const pool = currentBets.reduce((a, b) => a + b, 0);
-                    let safe = [];
-                    currentBets.forEach((v, i) => { if (v * 9 <= pool) safe.push(i); });
-                    
-                    // Ratio Check: If no profit, house wins (randomly picking least bet if possible)
-                    const winIdx = safe.length > 0 ? safe[Math.floor(Math.random() * safe.length)] : Math.floor(Math.random() * 12);
-                    
-                    // Update History & Reset Bets
-                    onValue(ref(db, 'game/history'), (s) => {
-                        let h = s.val() || [];
-                        h.unshift(symbols[winIdx]);
-                        if (h.length > 5) h.pop();
-                        update(ref(db, 'game'), { 
-                            lastWin: winIdx, 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>King666 | Global Sync Game</title>
+    <title>King666 | Fix Bet Mapping</title>
     <style>
         :root { --bg: #e0f7fa; --accent: #00bcd4; --gold: #d97706; --white: #ffffff; }
-        body { background: var(--bg); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; color: #333; }
-        
-        .header { width: 95%; max-width: 900px; background: var(--white); border-radius: 15px; padding: 20px; margin: 20px; display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .stat-val { font-size: 1.5rem; font-weight: bold; color: var(--accent); display: block; }
-        #timer { font-size: 3.5rem; font-weight: 900; color: #00838f; margin: 0; }
-        .critical { color: #ff5252 !important; animation: blink 0.8s infinite; }
-
-        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 95%; max-width: 900px; padding: 10px; }
-        .card { background: var(--white); border-radius: 12px; padding: 20px 5px; text-align: center; cursor: pointer; transition: 0.2s; border-bottom: 4px solid #cbd5e1; }
-        .card.win { border: 4px solid #4caf50; background: #e8f5e9; transform: scale(1.05); box-shadow: 0 0 20px rgba(76,175,80,0.4); }
-        .card.disabled { opacity: 0.6; cursor: not-allowed; }
-
+        body { background: #bae6fd; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; }
+        .header { width: 95%; max-width: 900px; background: white; border-radius: 15px; padding: 15px; margin: 15px 0; display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #timer { font-size: 3rem; font-weight: 900; color: #00838f; }
+        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 95%; max-width: 900px; }
+        .card { background: white; border-radius: 10px; padding: 15px 5px; text-align: center; cursor: pointer; border-bottom: 4px solid #cbd5e1; }
+        .card.win { border: 4px solid #22c55e; background: #f0fdf4; transform: scale(1.05); }
         .emoji { font-size: 2.5rem; display: block; }
-        .bet-tag { font-size: 0.8rem; font-weight: bold; color: var(--gold); margin-top: 8px; }
-        .history { display: flex; gap: 8px; margin-bottom: 15px; }
-        .h-item { width: 40px; height: 40px; background: #fff; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--accent); }
-
-        .bet-controls { margin: 20px; background: #fff; padding: 10px 25px; border-radius: 50px; display: flex; gap: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        input { border: 2px solid var(--accent); border-radius: 20px; padding: 8px; width: 100px; text-align: center; font-weight: bold; outline: none; }
-        
-        @keyframes blink { 50% { opacity: 0.4; } }
-        @media (max-width: 600px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+        .bet-tag { background: #f1f5f9; color: var(--gold); font-size: 0.8rem; font-weight: bold; margin-top: 5px; padding: 2px; border-radius: 4px; }
+        .history { display: flex; gap: 8px; margin: 10px 0; }
+        .h-circle { width: 35px; height: 35px; background: #fff; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--accent); }
+        .controls { margin: 20px; background: #fff; padding: 10px 20px; border-radius: 50px; display: flex; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input { border: 2px solid var(--accent); border-radius: 20px; padding: 8px; width: 80px; text-align: center; font-weight: bold; }
+        @media (max-width: 700px) { .grid { grid-template-columns: repeat(3, 1fr); } }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div><span style="font-size: 0.7rem; color: #777;">WALLET</span><span class="stat-val">₹<span id="bal">50000</span></span></div>
-        <div><div id="timer">--</div><span id="status" style="font-weight: bold; font-size: 0.8rem;">SYNCING...</span></div>
-        <div><span style="font-size: 0.7rem; color: #777;">TOTAL POOL</span><span class="stat-val" style="color: var(--gold);">₹<span id="pool">0</span></span></div>
+        <div><small>Wallet</small><br><b style="color:var(--accent)">₹<span id="bal">50000</span></b></div>
+        <div><div id="timer">--</div><small id="status">SYNCING</small></div>
+        <div><small>Total Pool</small><br><b style="color:var(--gold)">₹<span id="pool">0</span></b></div>
     </div>
 
     <div class="history" id="hist"></div>
     <div class="grid" id="grid"></div>
 
-    <div class="bet-controls">
+    <div class="controls">
         <input type="number" id="amt" value="100">
-        <span style="line-height: 35px; font-weight: bold; color: #64748b;">Tap to Bet</span>
+        <span style="line-height: 40px; font-weight: bold; color: #666;">Click Sign to Bet</span>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBL6_PZO69nI5Ci5sb0k-seiDUVz2K3hjU",
@@ -302,129 +53,117 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const symbols = ['☂️','⚽','☀️','🪔','🐄','🪣','🪁','🛸','🌷','🦋','🐦','🐓'];
-        
-        let myWallet = 50000;
-        let currentBets = Array(12).fill(0);
-        let canBet = false;
+        const signs = ['☂️','⚽','☀️','🪔','🐄','🪣','🪁','🛸','🌷','🦋','🐦','🐓'];
 
-        // Initialize UI Grid
-        const gridUI = document.getElementById('grid');
-        symbols.forEach((s, i) => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.id = `card-${i}`;
-            card.innerHTML = `<span class="emoji">${s}</span><div class="bet-tag" id="t-${i}">₹0</div>`;
-            card.onclick = () => placeBet(i);
-            gridUI.appendChild(card);
+        let myWallet = 50000;
+        let canBet = false;
+        let globalBets = {}; // Store as object to prevent index shifting
+
+        // Build UI
+        const gridBox = document.getElementById('grid');
+        signs.forEach((s, i) => {
+            gridBox.innerHTML += `
+                <div class="card" id="card-${i}" onclick="placeBet(${i})">
+                    <span class="emoji">${s}</span>
+                    <div class="bet-tag" id="tag-${i}">₹0</div>
+                </div>
+            `;
         });
 
-        // 1. PLACE BET (Synchronized)
-        window.placeBet = (idx) => {
+        window.placeBet = (id) => {
             if (!canBet) return;
-            const betAmt = parseInt(document.getElementById('amt').value);
-            if (betAmt > myWallet) return alert("Low Balance!");
+            const amount = parseInt(document.getElementById('amt').value);
+            if (amount > myWallet) return alert("Balance Low!");
 
-            myWallet -= betAmt;
+            myWallet -= amount;
             document.getElementById('bal').innerText = myWallet;
 
-            // Transaction use karein taaki simultaneous bets miss na ho
-            const betRef = ref(db, `game/bets/${idx}`);
-            runTransaction(betRef, (currentValue) => (currentValue || 0) + betAmt);
+            // Target specific sign ID in Firebase
+            const betRef = ref(db, `luckyGame/bets/${id}`);
+            runTransaction(betRef, (current) => (current || 0) + amount);
         };
 
-        // 2. REALTIME DATA LISTENER
-        onValue(ref(db, 'game'), (snap) => {
-            const data = snap.val();
+        // Realtime Listener
+        onValue(ref(db, 'luckyGame'), (snapshot) => {
+            const data = snapshot.val();
             if (!data) return;
 
-            // Timer Sync
+            // Sync Timer
             const t = data.timer;
             document.getElementById('timer').innerText = t;
+            canBet = (t > 10);
+            document.getElementById('status').innerText = canBet ? "BETTING OPEN" : "CLOSED";
+
+            // Sync Bets - Exact Mapping
+            let totalPool = 0;
+            globalBets = data.bets || {};
             
-            if (t > 10) {
-                canBet = true;
-                document.getElementById('status').innerText = "BETTING OPEN";
-                document.getElementById('status').style.color = "#4caf50";
-                document.getElementById('timer').classList.remove('critical');
-                document.querySelectorAll('.card').forEach(c => c.classList.remove('disabled', 'win'));
-            } else {
-                canBet = false;
-                document.getElementById('status').innerText = (t <= 0) ? "RESULT" : "CLOSED";
-                document.getElementById('status').style.color = "#f44336";
-                if(t > 0) document.getElementById('timer').classList.add('critical');
-                document.querySelectorAll('.card').forEach(c => c.classList.add('disabled'));
+            // Sabhi tags reset karein pehle
+            signs.forEach((_, i) => document.getElementById(`tag-${i}`).innerText = "₹0");
+            
+            // Jo data aaya hai usey sahi jagah dalein
+            for (let id in globalBets) {
+                const amount = globalBets[id];
+                if (document.getElementById(`tag-${id}`)) {
+                    document.getElementById(`tag-${id}`).innerText = `₹${amount}`;
+                    totalPool += amount;
+                }
             }
+            document.getElementById('pool').innerText = totalPool;
 
-            // Bets & Pool Sync
-            if (data.bets) {
-                currentBets = Object.values(data.bets);
-                let pool = 0;
-                currentBets.forEach((v, i) => {
-                    document.getElementById(`t-${i}`).innerText = `₹${v}`;
-                    pool += v;
-                });
-                document.getElementById('pool').innerText = pool;
-            }
-
-            // Show Winner
+            // Winner & UI Reset
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('win'));
             if (t <= 0 && data.lastWin !== undefined) {
                 document.getElementById(`card-${data.lastWin}`)?.classList.add('win');
             }
 
-            // History Sync
             if (data.history) {
-                document.getElementById('hist').innerHTML = data.history.map(h => `<div class="h-item">${h}</div>`).join('');
+                document.getElementById('hist').innerHTML = data.history.map(h => `<div class="h-circle">${h}</div>`).join('');
             }
         });
 
-        // 3. MASTER ENGINE (Only one instance controls the timer globally)
-        function runGlobalEngine() {
-            // Hum check karenge ki timer database mein hai ya nahi
+        // Master Engine
+        function startEngine() {
             setInterval(() => {
-                const timerRef = ref(db, 'game/timer');
-                runTransaction(timerRef, (currentTimer) => {
-                    if (currentTimer === null) return 60; // Initial start
-                    
-                    let next = currentTimer - 1;
-                    
-                    // Reset Logic
-                    if (next < -5) {
-                        // Reset bets and history for next round
-                        update(ref(db, 'game'), { bets: Array(12).fill(0), timer: 60 });
-                        return 60;
-                    }
+                const timerRef = ref(db, 'luckyGame/timer');
+                runTransaction(timerRef, (current) => {
+                    if (current === null) return 60;
+                    let next = current - 1;
 
-                    // Winner Calculation at 0
                     if (next === 0) {
                         calculateWinnerLocally();
                     }
 
+                    if (next < -5) {
+                        update(ref(db, 'luckyGame'), { bets: null }); // Clear bets object
+                        return 60;
+                    }
                     return next;
                 });
             }, 1000);
         }
 
         function calculateWinnerLocally() {
-            const total = currentBets.reduce((a, b) => a + b, 0);
+            let total = 0;
+            for (let id in globalBets) total += globalBets[id];
+
             let safe = [];
-            currentBets.forEach((v, i) => { if (v * 9 <= total) safe.push(i); });
-            
+            signs.forEach((_, i) => {
+                let amt = globalBets[i] || 0;
+                if (amt * 9 <= total) safe.push(i);
+            });
+
             const winIdx = safe.length > 0 ? safe[Math.floor(Math.random() * safe.length)] : Math.floor(Math.random() * 12);
             
-            // Get history once and update
-            onValue(ref(db, 'game/history'), (s) => {
+            onValue(ref(db, 'luckyGame/history'), (s) => {
                 let h = s.val() || [];
-                h.unshift(symbols[winIdx]);
+                h.unshift(signs[winIdx]);
                 if (h.length > 5) h.pop();
-                update(ref(db, 'game'), { lastWin: winIdx, history: h });
+                update(ref(db, 'luckyGame'), { lastWin: winIdx, history: h });
             }, { onlyOnce: true });
         }
 
-        // Start engine
-        runGlobalEngine();
-
+        startEngine();
     </script>
 </body>
 </html>
-
