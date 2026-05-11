@@ -238,17 +238,193 @@
                         if (h.length > 5) h.pop();
                         update(ref(db, 'game'), { 
                             lastWin: winIdx, 
-                            history: h, 
-                            bets: Array(12).fill(0) 
-                        });
-                    }, { onlyOnce: true });
-                }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>King666 | Global Sync Game</title>
+    <style>
+        :root { --bg: #e0f7fa; --accent: #00bcd4; --gold: #d97706; --white: #ffffff; }
+        body { background: var(--bg); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; color: #333; }
+        
+        .header { width: 95%; max-width: 900px; background: var(--white); border-radius: 15px; padding: 20px; margin: 20px; display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .stat-val { font-size: 1.5rem; font-weight: bold; color: var(--accent); display: block; }
+        #timer { font-size: 3.5rem; font-weight: 900; color: #00838f; margin: 0; }
+        .critical { color: #ff5252 !important; animation: blink 0.8s infinite; }
+
+        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 95%; max-width: 900px; padding: 10px; }
+        .card { background: var(--white); border-radius: 12px; padding: 20px 5px; text-align: center; cursor: pointer; transition: 0.2s; border-bottom: 4px solid #cbd5e1; }
+        .card.win { border: 4px solid #4caf50; background: #e8f5e9; transform: scale(1.05); box-shadow: 0 0 20px rgba(76,175,80,0.4); }
+        .card.disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .emoji { font-size: 2.5rem; display: block; }
+        .bet-tag { font-size: 0.8rem; font-weight: bold; color: var(--gold); margin-top: 8px; }
+        .history { display: flex; gap: 8px; margin-bottom: 15px; }
+        .h-item { width: 40px; height: 40px; background: #fff; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--accent); }
+
+        .bet-controls { margin: 20px; background: #fff; padding: 10px 25px; border-radius: 50px; display: flex; gap: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input { border: 2px solid var(--accent); border-radius: 20px; padding: 8px; width: 100px; text-align: center; font-weight: bold; outline: none; }
+        
+        @keyframes blink { 50% { opacity: 0.4; } }
+        @media (max-width: 600px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div><span style="font-size: 0.7rem; color: #777;">WALLET</span><span class="stat-val">₹<span id="bal">50000</span></span></div>
+        <div><div id="timer">--</div><span id="status" style="font-weight: bold; font-size: 0.8rem;">SYNCING...</span></div>
+        <div><span style="font-size: 0.7rem; color: #777;">TOTAL POOL</span><span class="stat-val" style="color: var(--gold);">₹<span id="pool">0</span></span></div>
+    </div>
+
+    <div class="history" id="hist"></div>
+    <div class="grid" id="grid"></div>
+
+    <div class="bet-controls">
+        <input type="number" id="amt" value="100">
+        <span style="line-height: 35px; font-weight: bold; color: #64748b;">Tap to Bet</span>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBL6_PZO69nI5Ci5sb0k-seiDUVz2K3hjU",
+            authDomain: "luckyplaygame-6b4c2.firebaseapp.com",
+            databaseURL: "https://luckyplaygame-6b4c2-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "luckyplaygame-6b4c2",
+            storageBucket: "luckyplaygame-6b4c2.firebasestorage.app",
+            messagingSenderId: "628388666824",
+            appId: "1:628388666824:web:82e2a59c1daf2eac49f4fd"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const symbols = ['☂️','⚽','☀️','🪔','🐄','🪣','🪁','🛸','🌷','🦋','🐦','🐓'];
+        
+        let myWallet = 50000;
+        let currentBets = Array(12).fill(0);
+        let canBet = false;
+
+        // Initialize UI Grid
+        const gridUI = document.getElementById('grid');
+        symbols.forEach((s, i) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.id = `card-${i}`;
+            card.innerHTML = `<span class="emoji">${s}</span><div class="bet-tag" id="t-${i}">₹0</div>`;
+            card.onclick = () => placeBet(i);
+            gridUI.appendChild(card);
+        });
+
+        // 1. PLACE BET (Synchronized)
+        window.placeBet = (idx) => {
+            if (!canBet) return;
+            const betAmt = parseInt(document.getElementById('amt').value);
+            if (betAmt > myWallet) return alert("Low Balance!");
+
+            myWallet -= betAmt;
+            document.getElementById('bal').innerText = myWallet;
+
+            // Transaction use karein taaki simultaneous bets miss na ho
+            const betRef = ref(db, `game/bets/${idx}`);
+            runTransaction(betRef, (currentValue) => (currentValue || 0) + betAmt);
+        };
+
+        // 2. REALTIME DATA LISTENER
+        onValue(ref(db, 'game'), (snap) => {
+            const data = snap.val();
+            if (!data) return;
+
+            // Timer Sync
+            const t = data.timer;
+            document.getElementById('timer').innerText = t;
+            
+            if (t > 10) {
+                canBet = true;
+                document.getElementById('status').innerText = "BETTING OPEN";
+                document.getElementById('status').style.color = "#4caf50";
+                document.getElementById('timer').classList.remove('critical');
+                document.querySelectorAll('.card').forEach(c => c.classList.remove('disabled', 'win'));
+            } else {
+                canBet = false;
+                document.getElementById('status').innerText = (t <= 0) ? "RESULT" : "CLOSED";
+                document.getElementById('status').style.color = "#f44336";
+                if(t > 0) document.getElementById('timer').classList.add('critical');
+                document.querySelectorAll('.card').forEach(c => c.classList.add('disabled'));
+            }
+
+            // Bets & Pool Sync
+            if (data.bets) {
+                currentBets = Object.values(data.bets);
+                let pool = 0;
+                currentBets.forEach((v, i) => {
+                    document.getElementById(`t-${i}`).innerText = `₹${v}`;
+                    pool += v;
+                });
+                document.getElementById('pool').innerText = pool;
+            }
+
+            // Show Winner
+            if (t <= 0 && data.lastWin !== undefined) {
+                document.getElementById(`card-${data.lastWin}`)?.classList.add('win');
+            }
+
+            // History Sync
+            if (data.history) {
+                document.getElementById('hist').innerHTML = data.history.map(h => `<div class="h-item">${h}</div>`).join('');
+            }
+        });
+
+        // 3. MASTER ENGINE (Only one instance controls the timer globally)
+        function runGlobalEngine() {
+            // Hum check karenge ki timer database mein hai ya nahi
+            setInterval(() => {
+                const timerRef = ref(db, 'game/timer');
+                runTransaction(timerRef, (currentTimer) => {
+                    if (currentTimer === null) return 60; // Initial start
+                    
+                    let next = currentTimer - 1;
+                    
+                    // Reset Logic
+                    if (next < -5) {
+                        // Reset bets and history for next round
+                        update(ref(db, 'game'), { bets: Array(12).fill(0), timer: 60 });
+                        return 60;
+                    }
+
+                    // Winner Calculation at 0
+                    if (next === 0) {
+                        calculateWinnerLocally();
+                    }
+
+                    return next;
+                });
             }, 1000);
         }
 
-        // Start the engine
-        startEngine();
+        function calculateWinnerLocally() {
+            const total = currentBets.reduce((a, b) => a + b, 0);
+            let safe = [];
+            currentBets.forEach((v, i) => { if (v * 9 <= total) safe.push(i); });
+            
+            const winIdx = safe.length > 0 ? safe[Math.floor(Math.random() * safe.length)] : Math.floor(Math.random() * 12);
+            
+            // Get history once and update
+            onValue(ref(db, 'game/history'), (s) => {
+                let h = s.val() || [];
+                h.unshift(symbols[winIdx]);
+                if (h.length > 5) h.pop();
+                update(ref(db, 'game'), { lastWin: winIdx, history: h });
+            }, { onlyOnce: true });
+        }
+
+        // Start engine
+        runGlobalEngine();
 
     </script>
 </body>
 </html>
+
