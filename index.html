@@ -3,63 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>King666 | Ultimate Winner Fix</title>
+    <title>Pappu Game Play | Zero-Loss Pro</title>
     <style>
-        :root { --bg: #e0f7fa; --accent: #00bcd4; --gold: #d97706; --white: #ffffff; --danger: #ef4444; --success: #22c55e; }
-        body { background: radial-gradient(circle, #f0f9ff 0%, #bae6fd 100%); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; min-height: 100vh; overflow: hidden; }
-        
-        .dashboard { width: 95%; max-width: 900px; background: rgba(255, 255, 255, 0.9); border-radius: 20px; padding: 20px; margin: 15px 0; display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #fff; }
-        .stat-val { display: block; font-size: 1.5rem; font-weight: 800; color: var(--accent); }
-        #timer { font-size: 3.5rem; font-weight: 900; color: #0369a1; line-height: 1; }
+        :root {
+            --bg-casino: #e0f7fa;
+            --white-card: #ffffff;
+            --accent-cyan: #00bcd4;
+            --bet-amber: #d97706;
+            --text-dark: #334155;
+            --neon-green: #22c55e;
+            --neon-red: #ef4444;
+        }
 
-        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 95%; max-width: 900px; padding: 15px; }
-        .card { background: var(--white); border-radius: 12px; padding: 15px 5px; text-align: center; cursor: pointer; transition: 0.2s; border-bottom: 4px solid #cbd5e1; }
-        .card.win-glow { border: 4px solid var(--success); transform: scale(1.05); box-shadow: 0 0 20px var(--success); }
-        .emoji { font-size: 2.5rem; display: block; }
-        .bet-tag { background: #f1f5f9; color: var(--gold); font-size: 0.8rem; font-weight: bold; margin-top: 5px; padding: 3px; border-radius: 5px; }
+        body {
+            background-color: var(--bg-casino);
+            background-image: radial-gradient(#bae6fd 0.5px, #e0f7fa 0.5px);
+            background-size: 10px 10px;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
 
-        /* Popup Logic */
+        .title-badge {
+            background: linear-gradient(135deg, #0369a1, #00bcd4);
+            color: white;
+            padding: 8px 25px;
+            border-radius: 0 0 20px 20px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 12px rgba(0, 188, 212, 0.4);
+            margin-bottom: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .dashboard {
+            width: 95%;
+            max-width: 1000px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 10px 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid #fff;
+            align-items: center;
+        }
+
+        .stat-label { font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase; }
+        .stat-val { display: block; font-size: 1.6rem; font-weight: 800; color: var(--accent-cyan); }
+        #timer { font-size: 3.8rem; font-weight: 900; color: #0369a1; line-height: 1; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 columns based on your image */
+            gap: 15px;
+            width: 95%;
+            max-width: 600px;
+            padding: 20px;
+            background: rgba(186, 230, 253, 0.3);
+            border-radius: 25px;
+        }
+
+        .card {
+            background: var(--white-card);
+            border-radius: 15px;
+            padding: 20px 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 5px 0px #cbd5e1;
+            position: relative;
+        }
+
+        .card.win-glow {
+            border: 4px solid var(--neon-green);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--neon-green);
+            z-index: 10;
+        }
+
+        .emoji { font-size: 3rem; display: block; margin-bottom: 5px; }
+        .bet-tag { background: #f8fafc; color: var(--bet-amber); font-size: 0.9rem; font-weight: 800; padding: 4px 12px; border-radius: 10px; margin-top: 5px; display: inline-block; border: 1px solid #e2e8f0; }
+
         #result-popup { 
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
-            width: 280px; padding: 30px; border-radius: 25px; text-align: center;
+            width: 300px; padding: 40px 20px; border-radius: 25px; text-align: center;
             z-index: 2000; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 25px 60px rgba(0,0,0,0.5); color: white; display: none;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.6); color: white; display: none;
+            border: 4px solid #fff;
         }
         #result-popup.show { transform: translate(-50%, -50%) scale(1); display: block; }
-        .win-bg { background: linear-gradient(135deg, #22c55e 0%, #15803d 100%) !important; border: 4px solid white; }
-        .loss-bg { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important; border: 4px solid white; }
-        
-        .pop-emoji { font-size: 5.5rem; display: block; }
-        .pop-text { font-size: 2.2rem; font-weight: 900; }
+        .win-bg { background: radial-gradient(circle at top, #22c55e, #15803d); }
+        .loss-bg { background: radial-gradient(circle at top, #ef4444, #b91c1c); }
+        .pop-emoji { font-size: 6rem; display: block; margin-bottom: 15px; }
+        .pop-text { font-size: 2.2rem; font-weight: 900; text-transform: uppercase;}
 
-        .history { display: flex; gap: 8px; margin: 10px 0; }
-        .h-circle { width: 35px; height: 35px; background: #fff; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid var(--accent); }
-        .bet-bar { background: #fff; padding: 12px 30px; border-radius: 50px; display: flex; gap: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input { border: 2px solid var(--accent); border-radius: 20px; padding: 8px; width: 90px; text-align: center; font-weight: bold; outline: none; }
+        .history { display: flex; gap: 10px; margin: 15px 0; justify-content: center; }
+        .h-circle { width: 45px; height: 45px; background: #fff; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--accent-cyan); font-size: 1.5rem; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 
-        @media (max-width: 768px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+        .bet-bar { background: #fff; padding: 15px 35px; border-radius: 50px; display: flex; gap: 15px; align-items: center; box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin: 25px 0; border: 1px solid #e2e8f0; }
+        input[type="number"] { border: 2px solid var(--accent-cyan); border-radius: 20px; padding: 10px; width: 110px; text-align: center; font-weight: bold; outline: none; font-size: 1.1rem; }
+
+        @keyframes blink { 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
+    <div class="title-badge">Pappu Game Play</div>
+
     <div id="result-popup">
         <span class="pop-emoji" id="pop-icon">🎁</span>
         <div class="pop-text" id="pop-title">...</div>
-        <div style="font-size: 1.4rem; margin-top: 10px; font-weight: bold;" id="pop-amount"></div>
+        <div style="font-size: 1.4rem; margin-top: 15px; font-weight: bold;" id="pop-amount"></div>
     </div>
 
     <div class="dashboard">
-        <div><small>Wallet</small><span class="stat-val">₹<span id="bal">...</span></span></div>
-        <div><div id="timer">--</div><small id="status">SYNCING</small></div>
-        <div><small>Pool</small><span class="stat-val" id="pool" style="color:var(--gold)">₹0</span></div>
+        <div><span class="stat-label">Wallet</span><span class="stat-val">₹<span id="bal">...</span></span></div>
+        <div><div id="timer">--</div><span id="status" style="font-size:0.75rem; font-weight:bold; color: #16a34a">SYNCING</span></div>
+        <div><span class="stat-label">Pool</span><span class="stat-val" id="pool" style="color:var(--bet-amber)">3800</span></div>
     </div>
 
     <div class="history" id="hist"></div>
     <div class="grid" id="grid"></div>
 
     <div class="bet-bar">
-        <input type="number" id="amt" value="100">
-        <span style="line-height: 40px; font-weight: bold; color: #64748b;">Place Bet</span>
+        <input type="number" id="amt" value="100" min="10">
+        <span style="font-weight: bold; color: #64748b;">Tap Icon to Bet</span>
     </div>
 
     <script type="module">
@@ -84,7 +164,7 @@
         let myWallet = 0;
         let canBet = false;
         let globalBets = {};
-        let myCurrentBets = {}; // Local snapshot of current round bets
+        let myCurrentBets = {}; 
 
         const gridUI = document.getElementById('grid');
         signs.forEach((s, i) => {
@@ -92,7 +172,7 @@
                 <span class="emoji">${s}</span><div class="bet-tag" id="tag-${i}">₹0</div></div>`;
         });
 
-        // 1. Sync Wallet & Bets
+        // Sync Wallet & Player Record
         onValue(ref(db, `users/${userId}`), (snap) => {
             const data = snap.val();
             myWallet = data ? (data.balance || 50000) : 50000;
@@ -100,12 +180,10 @@
             document.getElementById('bal').innerText = myWallet;
         });
 
-        // 2. Placing Bets
         window.placeBet = (id) => {
             if (!canBet) return;
             const amount = parseInt(document.getElementById('amt').value);
-            if (amount > myWallet) return alert("Balance Low!");
-
+            if (amount > myWallet) return alert("Insufficient Balance!");
             update(ref(db, `users/${userId}`), { balance: myWallet - amount });
             runTransaction(ref(db, `users/${userId}/currentRoundBets/${id}`), (curr) => (curr || 0) + amount);
             runTransaction(ref(db, `luckyGame/bets/${id}`), (curr) => (curr || 0) + amount);
@@ -116,7 +194,6 @@
         const popTitle = document.getElementById('pop-title');
         const popAmt = document.getElementById('pop-amount');
 
-        // 3. Main Listener
         onValue(ref(db, 'luckyGame'), (snapshot) => {
             const data = snapshot.val();
             if (!data) return;
@@ -128,51 +205,46 @@
                 popup.classList.remove('show', 'win-bg', 'loss-bg');
                 document.querySelectorAll('.card').forEach(c => c.classList.remove('win-glow'));
                 document.getElementById('status').innerText = "OPEN";
+                document.getElementById('status').style.color = "#16a34a";
             } else {
                 canBet = false;
-                document.getElementById('status').innerText = "CLOSED";
+                document.getElementById('status').innerText = t <= 0 ? "RESULT" : "CLOSED";
+                document.getElementById('status').style.color = "#ef4444";
             }
 
+            // Pool Display
             let pool = 0;
             globalBets = data.bets || {};
             signs.forEach((_, i) => document.getElementById(`tag-${i}`).innerText = "₹0");
             for (let id in globalBets) {
-                document.getElementById(`tag-${id}`).innerText = `₹${globalBets[id]}`;
-                pool += globalBets[id];
+                if(document.getElementById(`tag-${id}`)) {
+                    document.getElementById(`tag-${id}`).innerText = `₹${globalBets[id]}`;
+                    pool += globalBets[id];
+                }
             }
             document.getElementById('pool').innerText = pool;
 
-            // 4. THE FIX: Logic on Result
+            // Result Popup
             if (t === 0 && data.lastWin !== undefined) {
                 const winIdx = data.lastWin;
-                document.getElementById(`card-${winIdx}`)?.classList.add('win-glow');
-                popIcon.innerText = signs[winIdx];
-                
-                // Result checking using our local snapshot that's locked for this second
-                const amountOnWinner = myCurrentBets[winIdx] || 0;
+                if(winIdx !== -1) document.getElementById(`card-${winIdx}`)?.classList.add('win-glow');
+                popIcon.innerText = winIdx === -1 ? "🏠" : signs[winIdx];
+                const amountOnWinner = (winIdx !== -1) ? (myCurrentBets[winIdx] || 0) : 0;
 
                 if (amountOnWinner > 0) {
                     const winTotal = amountOnWinner * 9;
                     popTitle.innerText = "YOU WON!";
-                    popAmt.innerText = `Win Amount: ₹${winTotal}`;
+                    popAmt.innerText = `Win: ₹${winTotal}`;
                     popup.classList.add('show', 'win-bg');
-                    
-                    // Award money and clear bets AFTER 1 second to ensure no sync clash
                     setTimeout(() => {
-                        update(ref(db, `users/${userId}`), { 
-                            balance: myWallet + winTotal,
-                            currentRoundBets: null 
-                        });
+                        update(ref(db, `users/${userId}`), { balance: myWallet + winTotal, currentRoundBets: null });
                     }, 1000);
                 } else {
                     popTitle.innerText = "TRY AGAIN!";
-                    popAmt.innerText = `Result: ${signs[winIdx]}`;
+                    popAmt.innerText = winIdx === -1 ? "House Wins!" : `Result: ${signs[winIdx]}`;
                     popup.classList.add('show', 'loss-bg');
-                    setTimeout(() => {
-                        update(ref(db, `users/${userId}`), { currentRoundBets: null });
-                    }, 1000);
+                    setTimeout(() => { update(ref(db, `users/${userId}`), { currentRoundBets: null }); }, 1000);
                 }
-                
                 setTimeout(() => { popup.classList.remove('show'); }, 4000);
             }
 
@@ -181,16 +253,24 @@
             }
         });
 
-        // 5. Global Engine
+        // MASTER TIMER ENGINE with Recovery Logic
         setInterval(() => {
             runTransaction(ref(db, 'luckyGame/timer'), (curr) => {
+                // Recovery: Agar timer null hai ya kisi ne pehle shuru nahi kiya
                 if (curr === null) return 60;
+                
                 let next = curr - 1;
-                if (next === 0) calculateWinnerLocally();
+
+                // Recovery: Agar timer 0 par atak jaye toh result nikaal kar reset karo
                 if (next < -5) {
                     update(ref(db, 'luckyGame'), { bets: null });
-                    return 60;
+                    return 60; 
                 }
+
+                if (next === 0) {
+                    calculateWinnerLocally();
+                }
+
                 return next;
             });
         }, 1000);
@@ -198,14 +278,22 @@
         function calculateWinnerLocally() {
             let total = 0;
             for (let id in globalBets) total += globalBets[id];
+            
+            // ZERO-LOSS LOGIC: Only pick signs that don't make Admin lose money
             let safe = [];
-            signs.forEach((_, i) => {
-                if ((globalBets[i] || 0) * 9 <= total) safe.push(i);
+            signs.forEach((_, i) => { 
+                let betOnSign = globalBets[i] || 0;
+                if (betOnSign === 0 || (betOnSign * 9) <= total) {
+                    safe.push(i);
+                }
             });
-            const winIdx = safe.length > 0 ? safe[Math.floor(Math.random() * safe.length)] : Math.floor(Math.random() * 12);
+
+            const winIdx = safe.length > 0 ? safe[Math.floor(Math.random() * safe.length)] : -1;
+            const historyIcon = winIdx === -1 ? "🏠" : signs[winIdx];
+
             get(ref(db, 'luckyGame/history')).then(s => {
                 let h = s.val() || [];
-                h.unshift(signs[winIdx]);
+                h.unshift(historyIcon);
                 if (h.length > 5) h.pop();
                 update(ref(db, 'luckyGame'), { lastWin: winIdx, history: h });
             });
