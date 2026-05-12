@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pappu Game Play | Shine Edition</title>
+    <title>Pappu Game Play | 12-Card Neon Edition</title>
     <style>
         :root {
             --bg-main: #0f172a; 
@@ -30,7 +30,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- SHINE EFFECT TITLE BADGE --- */
+        /* Shine Effect Title Badge */
         .title-badge {
             position: relative;
             background: linear-gradient(90deg, #0369a1, #0ea5e9);
@@ -44,7 +44,7 @@
             margin-bottom: 15px;
             border: 1px solid rgba(255,255,255,0.1);
             text-transform: uppercase;
-            overflow: hidden; /* Shine ko andar rakhne ke liye */
+            overflow: hidden;
         }
 
         .title-badge::before {
@@ -54,20 +54,12 @@
             left: -150%;
             width: 50%;
             height: 100%;
-            background: linear-gradient(
-                to right, 
-                transparent 0%, 
-                rgba(255, 255, 255, 0.4) 50%, 
-                transparent 100%
-            );
+            background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
             transform: skewX(-25deg);
-            animation: shine 3s infinite;
+            animation: titleShine 3s infinite;
         }
 
-        @keyframes shine {
-            0% { left: -150%; }
-            100% { left: 150%; }
-        }
+        @keyframes titleShine { 0% { left: -150%; } 100% { left: 150%; } }
 
         .dashboard {
             width: 92%;
@@ -85,30 +77,13 @@
             align-items: center;
         }
 
-        .stat-label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; }
+        .stat-label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
         .stat-val { font-size: 1.4rem; font-weight: 800; color: var(--accent-cyan); display: block; }
         #timer { font-size: 4rem; font-weight: 900; color: #f8fafc; line-height: 0.9; margin: 8px 0; font-variant-numeric: tabular-nums; }
         .timer-warning { color: var(--danger) !important; }
 
-        .chip-bar {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
-            width: 92%;
-            max-width: 500px;
-            justify-content: center;
-        }
-        .chip {
-            background: #334155;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 0.8rem;
-            border: 1px solid rgba(255,255,255,0.1);
-            cursor: pointer;
-            transition: 0.2s;
-        }
+        .chip-bar { display: flex; gap: 8px; margin-bottom: 15px; width: 92%; max-width: 500px; justify-content: center; }
+        .chip { background: #334155; color: white; padding: 8px 12px; border-radius: 12px; font-weight: 800; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s; }
         .chip.active { background: var(--accent-cyan); border-color: white; box-shadow: 0 0 10px var(--accent-cyan); }
 
         .grid {
@@ -136,19 +111,20 @@
             position: relative;
         }
 
+        /* 12-Card Neon Pulse Effect */
         .neon-pulse {
-            border: 2px solid var(--neon-wave);
-            box-shadow: 0 0 15px var(--neon-wave);
-            animation: breathe 1.5s ease-in-out infinite;
+            border: 2.5px solid var(--neon-wave) !important;
+            box-shadow: 0 0 20px var(--neon-wave), inset 0 0 10px var(--neon-wave) !important;
+            animation: breatheCards 1.2s ease-in-out infinite;
         }
 
-        @keyframes breathe {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 10px var(--neon-wave); }
-            50% { transform: scale(1.02); box-shadow: 0 0 25px var(--neon-wave); }
+        @keyframes breatheCards {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
         }
 
         .card:active { transform: scale(0.94); }
-        .card.win-glow { border: 4px solid var(--success); box-shadow: 0 0 35px rgba(16, 185, 129, 0.6); transform: scale(1.05); background: #064e3b; }
+        .card.win-glow { border: 4px solid var(--success) !important; box-shadow: 0 0 35px rgba(16, 185, 129, 0.8) !important; transform: scale(1.08); background: #064e3b; z-index: 10; }
 
         .emoji { font-size: 3.4rem; display: block; margin-bottom: 10px; }
         .bet-tag { background: rgba(15, 23, 42, 0.6); color: var(--pool-gold); font-size: 1rem; font-weight: 800; padding: 6px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); }
@@ -282,7 +258,8 @@
                 document.getElementById('status').innerText = t <= 0 ? "RESULT" : "CLOSED";
                 document.getElementById('status').style.color = "#ef4444";
                 if (t > 0) {
-                    for (let id in globalBets) if (globalBets[id] > 0) document.getElementById(`card-${id}`).classList.add('neon-pulse');
+                    // EFFECT ON ALL 12 CARDS
+                    document.querySelectorAll('.card').forEach(card => card.classList.add('neon-pulse'));
                 }
             }
 
@@ -297,6 +274,7 @@
 
             if (t === 0 && data.lastWin !== undefined) {
                 const winIdx = data.lastWin;
+                document.querySelectorAll('.card').forEach(c => c.classList.remove('neon-pulse'));
                 if(winIdx !== -1) document.getElementById(`card-${winIdx}`)?.classList.add('win-glow');
                 const pop = document.getElementById('result-popup');
                 document.getElementById('pop-icon').innerText = winIdx === -1 ? "🏠" : signs[winIdx];
